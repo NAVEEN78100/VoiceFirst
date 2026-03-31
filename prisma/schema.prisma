@@ -1,0 +1,295 @@
+// Prisma Schema for VoiceFirst Auth Module
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+  CX
+}
+
+enum TwoFactorMethod {
+  TOTP
+  EMAIL
+  RECOVERY_CODE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  branchId  String?  @map("branch_id")
+  isActive  Boolean  @default(true) @map("is_active")
+
+  // 2FA fields
+  twoFactorEnabled  Boolean          @default(false) @map("two_factor_enabled")
+  twoFactorMethod   TwoFactorMethod? @map("two_factor_method")
+  totpSecret        String?          @map("totp_secret") // Encrypted
+  
+  // Audit timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  lastLogin DateTime? @map("last_login")
+
+  // Relations
+  branch         Branch?         @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  emailOtps      EmailOtp[]
+  recoveryCodes  RecoveryCode[]
+  loginAttempts  LoginAttempt[]
+  tempAuthTokens TempAuthToken[]
+  touchpoints    Touchpoint[]
+  messageLogs    MessageLog[]
+
+  @@map("users")
+}
+
+model EmailOtp {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  code      String   // Hashed
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_otps")
+}
+
+model RecoveryCode {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  code      String   // Hashed
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  usedAt    DateTime? @map("used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recovery_codes")
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  email     String
+  ipAddress String?  @map("ip_address")
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("login_attempts")
+}
+
+model TempAuthToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("temp_auth_tokens")
+}
+
+// ─── Touchpoint Management System ─────────────────────────────────
+
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  code      String?  @unique
+  location  String?
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users       User[]
+  touchpoints Touchpoint[]
+  feedbacks   Feedback[]
+
+  @@map("branches")
+}
+
+enum TouchpointType {
+  BRANCH_DESK
+  STAFF
+  ATM
+  OTHER
+}
+
+model Touchpoint {
+  id        String         @id @default(uuid())
+  name      String
+  type      TouchpointType @default(OTHER)
+  token     String         @unique @default(uuid()) // Unique identifier for QR-based feedback
+  
+  branchId  String         @map("branch_id")
+  staffId   String?        @map("staff_id")
+  
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  staff   User?   @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  feedbacks Feedback[]
+  cases     Case[]
+  messageLogs MessageLog[]
+
+  @@index([token])
+  @@index([branchId])
+  @@map("touchpoints")
+}
+
+// ─── Feedback Capture System ──────────────────────────────────────
+
+model Feedback {
+  id            String   @id @default(uuid())
+  rating        Int      @db.SmallInt // 1 to 5
+  comment       String?  @db.Text
+  phone         String?  @db.VarChar(20) // Nullable for anonymous flow
+  
+  touchpointId  String   @map("touchpoint_id")
+  branchId      String   @map("branch_id")
+  
+  // Metadata fields
+  ipAddress     String?  @map("ip_address")
+  country       String?
+  city          String?
+  deviceType    String?  @map("device_type")
+  browser       String?
+  os            String?
+  userAgent     String?  @map("user_agent") @db.Text
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  touchpoint Touchpoint @relation(fields: [touchpointId], references: [id], onDelete: Restrict)
+  branch     Branch     @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  // One-to-one: a feedback record may have at most one auto-generated case
+  case Case?
+
+  @@index([touchpointId])
+  @@index([branchId])
+  @@index([createdAt])
+  @@index([rating])
+  @@map("feedbacks")
+}
+
+// ─── Case Management System ───────────────────────────────────────
+
+enum CaseStatus {
+  NEW         // Newly created, awaiting assignment
+  ACKNOWLEDGED // Assignment confirmed
+  IN_PROGRESS // Assigned and being worked on
+  RESOLVED    // Follow-up completed
+  CLOSED      // Archived
+}
+
+enum CasePriority {
+  CRITICAL // Rating 1 — immediate escalation required
+  HIGH     // Rating 2 — prompt follow-up required
+  MEDIUM   // Reserved for future use (e.g. rating 3)
+  LOW      // Reserved for future use
+}
+
+model Case {
+  id            String       @id @default(uuid())
+
+  /// Foreign key to the feedback that triggered this case.
+  feedbackId    String       @unique @map("feedback_id")
+
+  branchId      String       @map("branch_id")
+  touchpointId  String       @map("touchpoint_id")
+
+  initialRating  Int          @db.SmallInt @map("initial_rating")
+  followUpRating Int?         @db.SmallInt @map("follow_up_rating")
+  recoveryDelta  Int?         @db.SmallInt @map("recovery_delta")
+  
+  priority      CasePriority @default(HIGH)
+  status        CaseStatus   @default(NEW)
+  
+  canContact    Boolean      @default(false) @map("can_contact")
+  notes         String?      @db.Text
+  
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  resolvedAt    DateTime?    @map("resolved_at")
+
+  feedback      Feedback     @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  touchpoint    Touchpoint   @relation(fields: [touchpointId], references: [id], onDelete: Restrict)
+
+  @@index([branchId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("cases")
+}
+
+// ─── Direct Inbound/Outbound Communication ───────────────────────
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+enum MessageChannel {
+  WHATSAPP
+  SMS
+}
+
+model MessageLog {
+  id                     String         @id @default(uuid())
+  phone                  String
+  touchpointId           String         @map("touchpoint_id")
+  staffId                String?        @map("staff_id")
+  branchId               String         @map("branch_id")
+  caseId                 String?        @map("case_id")
+
+  status                 MessageStatus  @default(PENDING)
+  initialChannel         MessageChannel @default(WHATSAPP) @map("initial_channel")
+  channelUsed            MessageChannel? @map("channel_used")
+
+  token                  String         @unique // Survey request token (query param `m`)
+  surveyUrl              String         @map("survey_url") @db.Text
+  whatsappMessageId      String?        @unique @map("whatsapp_message_id")
+  smsMessageId           String?        @map("sms_message_id")
+
+  queuedAt               DateTime       @default(now()) @map("queued_at")
+  processingStartedAt    DateTime?      @map("processing_started_at")
+  sentAt                 DateTime?      @map("sent_at")
+  deliveredAt            DateTime?      @map("delivered_at")
+  failedAt               DateTime?      @map("failed_at")
+  smsFallbackTriggeredAt DateTime?      @map("sms_fallback_triggered_at")
+
+  retryCount             Int            @default(0) @map("retry_count")
+  errorMessage           String?        @map("error_message") @db.Text
+  providerResponse       Json?          @map("provider_response")
+
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+
+  touchpoint             Touchpoint     @relation(fields: [touchpointId], references: [id], onDelete: Restrict)
+  staff                  User?          @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@index([phone])
+  @@index([status])
+  @@index([queuedAt])
+  @@index([processingStartedAt])
+  @@index([token])
+  @@map("message_logs")
+}
