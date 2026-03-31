@@ -1,13 +1,30 @@
+<div align="center">
+
 # 🎙️ VoiceFirst
 
-**Empowering Customer Voice through High-Fidelity Feedback & AI-Driven Insights**
+#### **Empowering Customer Voice through High-Fidelity Feedback & AI-Driven Insights**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Stack: NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![Stack: Next.js](https://img.shields.io/badge/Frontend-Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Database: Prisma](https://img.shields.io/badge/Database-Prisma-2D3748?style=flat&logo=prisma&logoColor=white)](https://www.prisma.io/)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
-VoiceFirst is a modern, enterprise-ready feedback management platform built to capture, analyze, and act on customer feedback. With a focus on security, scalability, and AI-enhanced sentiment analysis, VoiceFirst bridges the gap between raw feedback and actionable business intelligence.
+---
+
+</div>
+
+## 🧠 What is VoiceFirst?
+
+**VoiceFirst** is an enterprise-grade feedback management platform designed to capture and analyze the "voice" of your customers in real-time. It transforms raw data into actionable business intelligence using cutting-edge AI and robust data architectures.
+
+-   **📡 Real-Time Feedback Collection** — Capture ratings and reviews instantly across multiple touchpoints.
+-   **🔐 2FA & RBAC Security** — Enterprise-level protection with Two-Factor Authentication and granular Role-Based Access Control.
+-   **🤖 AI Sentiment Analysis** — Auto-detect customer mood (Positive / Negative / Critical) and extract key loved/criticized traits.
+-   **📍 Multi-Touchpoint Routing** — Track feedback specifically for individual branches, departments, or staff members.
+-   **🌓 Modern Fluid UI** — A premium, responsive dashboard experience built with Next.js 14 and Shadcn/UI.
+-   **📈 Advanced Analytics** — Visualize feedback trends with dynamic charts and geographic metadata (IP, Location, Browser).
 
 ---
 
@@ -43,94 +60,55 @@ graph TD
 
 ---
 
-## ✨ Key Features
+## 🚀 Quick Setup
 
--   **🔐 Robust Security**: 
-    -   JWT-based Authentication.
-    -   Integrated **Two-Factor Authentication (2FA)** for secure accounts.
-    -   Granular **RBAC (Role-Based Access Control)** for staff and administrators.
--   **📊 Feedback Explorer**: 
-    -   Real-time feedback monitoring.
-    -   Integrated metadata capture (Device, Browser, Geolocation).
--   **🤖 AI Sentiment Analysis**: 
-    -   Automatically categorize customer sentiment (Positive, Negative, Neutral).
-    -   Extract key themes related to "Loved" or "Criticized" traits.
--   **📍 Multi-Touchpoint Management**:
-    -   Organize feedback by branch, department, or specific interaction points.
--   **🎨 Modern UI/UX**:
-    -   Clean, dark-mode-ready interface built with Next.js 14 and Tailwind CSS.
-    -   Smooth framer-motion animations for a premium feel.
-
----
-
-## 🚀 Tech Stack
-
-### Backend
--   **NestJS**: Progressive Node.js framework for efficient, scalable server-side applications.
--   **Prisma**: Next-generation ORM for Node.js and TypeScript.
--   **PostgreSQL**: Reliable, powerful open-source relational database.
--   **Passport.js**: Authentication middleware for security strategies.
-
-### Frontend
--   **Next.js**: The React framework for the web.
--   **Tailwind CSS**: Utility-first CSS framework for rapid UI development.
--   **Shadcn/UI**: Highly customizable components built on Radix UI.
--   **Lucide Icons**: Beautifully simple, pixel-perfect icons.
-
----
-
-## 🛠️ Getting Started
-
-### Prerequisites
+### 1. Prerequisites
 -   Node.js (v18+)
--   npm or yarn
--   PostgreSQL instance
+-   PostgreSQL
 
-### Installation
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/NAVEEN78100/VoiceFirst.git
+cd VoiceFirst
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/NAVEEN78100/VoiceFirst.git
-    cd VoiceFirst
-    ```
+# Install Backend dependencies
+npm install
 
-2.  **Environment Setup**:
-    -   Create a `.env` in the root folder for the backend.
-    -   Create a `.env` in the `/frontend` folder for the Next.js app.
-    -   Refer to `.env.example` in both directories.
+# Install Frontend dependencies
+cd frontend
+npm install
+cd ..
+```
 
-3.  **Install Dependencies**:
-    ```bash
-    # Root (Backend) dependencies
-    npm install
+### 3. Environment Config
+Copy `.env.example` to `.env` in both the root and `frontend/` folders and fill in your credentials:
+-   `DATABASE_URL` (PostgreSQL)
+-   `JWT_SECRET`
+-   `2FA_APP_NAME` (VoiceFirst)
 
-    # Frontend dependencies
-    cd frontend
-    npm install
-    cd ..
-    ```
+### 4. Launch
+```bash
+# Run Database Migrations
+npx prisma migrate dev
 
-4.  **Database Migration**:
-    ```bash
-    npx prisma migrate dev
-    ```
-
-5.  **Run the Project**:
-    ```bash
-    # Run Backend (Root)
-    npm run dev
-
-    # Run Frontend (in /frontend folder)
-    cd frontend
-    npm run dev
-    ```
+# Start development servers
+# (Root for Backend, /frontend for Frontend)
+npm run dev
+```
 
 ---
 
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🎨 Design Principles
+-   **Premium Aesthetics**: Curated HSL color palettes and smooth gradients.
+-   **Accessibility First**: Full Keyboard navigation and screen reader support.
+-   **Micro-Animations**: Subtle hover effects and state transitions using Framer Motion.
 
 ---
+
+<div align="center">
 
 Developed with ❤️ by the **VoiceFirst Team**.
+[Website](#) • [Support](#) • [Documentation](#)
+
+</div>
