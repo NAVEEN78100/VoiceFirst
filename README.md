@@ -149,7 +149,7 @@ npm run dev
 
 <div align="center">
 
-Developed with ❤️ by the **VoiceFirst Team**.
+Developed with ❤️ by the **Naveen D**.
 [Website](#) • [Support](#) • [Documentation](#)
 
 </div>
