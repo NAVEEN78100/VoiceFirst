@@ -1,127 +1,136 @@
-# 🗣️ VoiceFirst Platform
+# 🎙️ VoiceFirst
 
-[![NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?style=flat-square&logo=nestjs)](https://nestjs.com/)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js-000000?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+**Empowering Customer Voice through High-Fidelity Feedback & AI-Driven Insights**
 
-**VoiceFirst** is a production-grade Feedback & Case Management ecosystem designed for enterprise service touchpoints (Branches, ATMs, Staff). It enables real-time feedback capture via QR codes, automated escalation for negative experiences, and deep analytics for management.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Stack: NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![Stack: Next.js](https://img.shields.io/badge/Frontend-Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Database: Prisma](https://img.shields.io/badge/Database-Prisma-2D3748?style=flat&logo=prisma&logoColor=white)](https://www.prisma.io/)
 
----
-
-## 🌟 Key Features
-
-### 🔐 Advanced Security & Auth
-*   **RBAC (Role-Based Access Control):** Granular permissions for ADMIN, CX, MANAGER, and STAFF.
-*   **Dual-Factor Authentication:** Support for TOTP (Authenticator Apps) and Email OTP.
-*   **Security Hardening:** Brute-force protection, hashed recovery codes, and JWT-based sessions.
-*   **Audit Logging:** Comprehensive tracking of login attempts and critical system actions.
-
-### 📊 Feedback & Touchpoints
-*   **Dynamic Touchpoints:** Manage physical locations (Branches), digital assets (ATMs), or specific Staff members.
-*   **QR-Powered Capture:** Tokenized survey links for secure, anonymous, or identified feedback.
-*   **Sentiment Tracking:** 1-5 rating system with text comment support.
-
-### 🛠️ Case Management (Auto-Escalation)
-*   **Automated Triggers:** Low ratings (1-2) automatically generate "Cases" with priority levels.
-*   **Recovery Workflow:** Track follow-ups, resolution status, and "Recovery Delta" (improvement in satisfaction).
-*   **Escalation Matrix:** Notifications sent to Branch Managers or CX teams based on priority.
+VoiceFirst is a modern, enterprise-ready feedback management platform built to capture, analyze, and act on customer feedback. With a focus on security, scalability, and AI-enhanced sentiment analysis, VoiceFirst bridges the gap between raw feedback and actionable business intelligence.
 
 ---
 
-## 🏗️ Architecture
+## 🏛️ System Architecture
 
 ```mermaid
 graph TD
-    A[Public/Client] -->|Feedback/QR| B(Next.js Frontend)
-    C[Internal Staff/Admin] -->|Dashboard/Auth| B
-    B -->|API Requests| D(NestJS Backend)
-    D -->|PostgreSQL/Prisma| E[(Database)]
-    D -->|SMTP| F[Email Service]
-    D -->|Future| G[WhatsApp/SMS Gateway]
+    subgraph Client ["Client Side (Next.js)"]
+        UI["Modern Dashboard <br/>(Shadcn/UI, Tailwind)"]
+        FeedbackWidget["Feedback Capture Widget"]
+    end
+
+    subgraph API ["Server Side (NestJS)"]
+        Auth["Auth & 2FA Service"]
+        RBAC["RBAC & Permissioning"]
+        FeedbackModule["Feedback Explorer"]
+        AIService["AI Sentiment Analysis"]
+    end
+
+    subgraph DB ["Data Layer"]
+        Prisma["Prisma ORM"]
+        Postgres[(PostgreSQL)]
+    end
+
+    UI <--> Auth
+    UI --> FeedbackModule
+    FeedbackWidget --> FeedbackModule
+    FeedbackModule --> AIService
+    FeedbackModule <--> Prisma
+    Auth <--> Prisma
+    Prisma <--> Postgres
 ```
 
 ---
 
-## 🚀 Quick Start
+## ✨ Key Features
 
-### 1. Prerequisites
-- **Node.js** >= 18
-- **PostgreSQL** instance
-- **npm** >= 9
-
-### 2. Backend Setup (Root)
-```bash
-# Install dependencies
-npm install
-
-# Setup Environment
-cp .env.example .env
-# Update .env with your DATABASE_URL and JWT_SECRET
-
-# Database Initialization (Migrate + Generate + Seed)
-npm run db:setup
-
-# Start Development Server
-npm run start:dev
-```
-
-### 3. Frontend Setup (`/frontend`)
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start Next.js App
-npm run dev
-```
+-   **🔐 Robust Security**: 
+    -   JWT-based Authentication.
+    -   Integrated **Two-Factor Authentication (2FA)** for secure accounts.
+    -   Granular **RBAC (Role-Based Access Control)** for staff and administrators.
+-   **📊 Feedback Explorer**: 
+    -   Real-time feedback monitoring.
+    -   Integrated metadata capture (Device, Browser, Geolocation).
+-   **🤖 AI Sentiment Analysis**: 
+    -   Automatically categorize customer sentiment (Positive, Negative, Neutral).
+    -   Extract key themes related to "Loved" or "Criticized" traits.
+-   **📍 Multi-Touchpoint Management**:
+    -   Organize feedback by branch, department, or specific interaction points.
+-   **🎨 Modern UI/UX**:
+    -   Clean, dark-mode-ready interface built with Next.js 14 and Tailwind CSS.
+    -   Smooth framer-motion animations for a premium feel.
 
 ---
 
-## 👥 Pre-seeded Accounts
+## 🚀 Tech Stack
 
-| Role    | Email                    | Password       | Access Level |
-|---------|--------------------------|----------------|--------------|
-| **ADMIN**   | `admin@voicefirst.com`     | `Admin@123!`     | Full System Control |
-| **CX**      | `cx@voicefirst.com`        | `CxUser@123!`    | Global Data & Analytics |
-| **MANAGER** | `manager@voicefirst.com`   | `Manager@123!`   | Assigned Branch Data |
-| **STAFF**   | `staff@voicefirst.com`     | `Staff@123!`     | Own Feedback & Profile |
+### Backend
+-   **NestJS**: Progressive Node.js framework for efficient, scalable server-side applications.
+-   **Prisma**: Next-generation ORM for Node.js and TypeScript.
+-   **PostgreSQL**: Reliable, powerful open-source relational database.
+-   **Passport.js**: Authentication middleware for security strategies.
 
----
-
-## 🛠️ Tech Stack
-
-### Backend (NestJS)
-- **Framework:** NestJS (v11+)
-- **ORM:** Prisma 7
-- **Security:** Passport-JWT, Bcrypt, Otplib (TOTP), AES (Crypto-JS)
-- **Communication:** Nodemailer (Email OTP)
-- **Validation:** Class-Validator & Class-Transformer
-
-### Frontend (Next.js)
-- **Framework:** Next.js 15+ (App Router)
-- **Styling:** Tailwind CSS + Framer Motion (Animations)
-- **State:** React Context API (Auth) + Axios
-- **Charts:** Recharts for Analytics dashboards
+### Frontend
+-   **Next.js**: The React framework for the web.
+-   **Tailwind CSS**: Utility-first CSS framework for rapid UI development.
+-   **Shadcn/UI**: Highly customizable components built on Radix UI.
+-   **Lucide Icons**: Beautifully simple, pixel-perfect icons.
 
 ---
 
-## 📡 API Reference
+## 🛠️ Getting Started
 
-The backend exposes a structured API at `http://localhost:3000/api/v1`.
+### Prerequisites
+-   Node.js (v18+)
+-   npm or yarn
+-   PostgreSQL instance
 
-| Module | Purpose |
-| :--- | :--- |
-| `/auth` | Login, 2FA Verification, Token Refresh |
-| `/2fa` | Setup, Verification, Recovery Codes |
-| `/users` | User Profiles, CRUD (Admin) |
-| `/branches` | Location Management |
-| `/touchpoints` | QR Code Generation & Entry Management |
-| `/feedbacks` | Feedback Submission & Listing |
-| `/cases` | Case Tracking & Resolution |
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/NAVEEN78100/VoiceFirst.git
+    cd VoiceFirst
+    ```
+
+2.  **Environment Setup**:
+    -   Create a `.env` in the root folder for the backend.
+    -   Create a `.env` in the `/frontend` folder for the Next.js app.
+    -   Refer to `.env.example` in both directories.
+
+3.  **Install Dependencies**:
+    ```bash
+    # Root (Backend) dependencies
+    npm install
+
+    # Frontend dependencies
+    cd frontend
+    npm install
+    cd ..
+    ```
+
+4.  **Database Migration**:
+    ```bash
+    npx prisma migrate dev
+    ```
+
+5.  **Run the Project**:
+    ```bash
+    # Run Backend (Root)
+    npm run dev
+
+    # Run Frontend (in /frontend folder)
+    cd frontend
+    npm run dev
+    ```
 
 ---
 
 ## 📜 License
-Internal Use Only - **VoiceFirst Proprietary**.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Developed with ❤️ by the **VoiceFirst Team**.
