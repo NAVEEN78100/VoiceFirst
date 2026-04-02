@@ -78,15 +78,30 @@ export class TouchpointService {
       if (!staffMember) {
         throw new BadRequestException('Assigned staff member does not exist.');
       }
-      if (staffMember.branchId !== createTouchpointDto.branchId) {
+      if (staffMember.branchId && staffMember.branchId !== createTouchpointDto.branchId) {
         throw new BadRequestException('Staff member must formally belong to the same branch as the created touchpoint to guarantee physical proximity linking.');
       }
     }
 
     // Provision Touchpoint
-    return this.prisma.touchpoint.create({
-      data: createTouchpointDto,
-    });
+    try {
+      return await this.prisma.touchpoint.create({
+        data: {
+          ...createTouchpointDto,
+          staffId: createTouchpointDto.staffId || null,
+        },
+      });
+    } catch (error) {
+      console.error('[Touchpoint Creation FULL ERROR]:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack,
+        meta: error.meta
+      });
+      if (error.code === 'P2002') throw new BadRequestException('A touchpoint with this unique token already exists.');
+      if (error.code === 'P2003') throw new BadRequestException('Constraint violation: Ensure branch and staff IDs are valid.');
+      throw error;
+    }
   }
 
   async update(id: string, updateTouchpointDto: UpdateTouchpointDto, user: any) {
@@ -117,7 +132,10 @@ export class TouchpointService {
 
     return this.prisma.touchpoint.update({
       where: { id },
-      data: updateTouchpointDto,
+      data: {
+        ...updateTouchpointDto,
+        staffId: updateTouchpointDto.staffId === "" ? null : (updateTouchpointDto.staffId || undefined),
+      }
     });
   }
 

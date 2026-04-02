@@ -35,6 +35,16 @@ export default function StaffPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ role: '', branchId: '' });
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    role: user?.role === 'MANAGER' ? 'STAFF' : 'STAFF',
+    branchId: user?.branchId || ''
+  });
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -43,7 +53,13 @@ export default function StaffPage() {
         api.get('/branches')
       ]);
       setUsers((userRes as any).data || []);
-      setBranches((branchRes as any).data || []);
+      const branchData = (branchRes as any).data || [];
+      setBranches(branchData);
+      
+      // Auto-set branch for Admin if not set
+      if (user?.role === 'ADMIN' && !createForm.branchId && branchData.length > 0) {
+        setCreateForm(prev => ({ ...prev, branchId: branchData[0].id }));
+      }
     } catch (error) {
       console.error('Failed to fetch data', error);
     } finally {
@@ -52,8 +68,33 @@ export default function StaffPage() {
   };
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+      if (user.role === 'MANAGER') {
+        setCreateForm(prev => ({ ...prev, branchId: user.branchId || '', role: 'STAFF' }));
+      }
+    }
   }, [user]);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setCreatedPassword(null);
+    try {
+      const res: any = await api.post('/users', createForm);
+      if (res.data?.temporaryPassword) {
+        setCreatedPassword(res.data.temporaryPassword);
+      } else {
+        setShowCreateModal(false);
+        setCreateForm({ name: '', email: '', role: 'STAFF', branchId: user?.branchId || '' });
+      }
+      await fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Creation failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const startEdit = (member: StaffMember) => {
     setEditingId(member.id);
@@ -94,6 +135,29 @@ export default function StaffPage() {
           </h1>
           <p style={{ color: 'var(--text-muted)' }}>Map personnel to physical branches and manage network authority levels.</p>
         </div>
+        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+          <button 
+            onClick={() => {
+              setCreatedPassword(null);
+              setShowCreateModal(true);
+            }}
+            style={{ 
+              padding: '12px 24px', 
+              background: 'var(--primary)', 
+              color: 'white', 
+              borderRadius: '12px', 
+              fontWeight: '700', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              border: 'none', 
+              cursor: 'pointer',
+              boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.3)'
+            }}
+          >
+            <UserPlus size={18} /> Register Member
+          </button>
+        )}
       </header>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
@@ -200,6 +264,102 @@ export default function StaffPage() {
           </tbody>
         </table>
       </div>
+
+      {showCreateModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--surface)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border)', width: '100%', maxWidth: '440px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-0.5px' }}>
+              <UserPlus color="var(--primary)" /> Register New Member
+            </h2>
+            
+            {createdPassword ? (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
+                  <Shield style={{ margin: '0 auto 12px' }} />
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Member Provisioned Successfully</div>
+                  <div style={{ fontSize: '13px' }}>Provide these temporary credentials to the new user.</div>
+                </div>
+                
+                <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px', textAlign: 'left', marginBottom: '32px' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Email Address</div>
+                    <div style={{ fontWeight: '600' }}>{createForm.email}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Temporary Password</div>
+                    <code style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900', letterSpacing: '1px' }}>{createdPassword}</code>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateForm({ name: '', email: '', role: 'STAFF', branchId: user?.branchId || '' });
+                  }}
+                  style={{ width: '100%', padding: '14px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Close & Refresh List
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleCreate}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Display Name</label>
+                  <input required value={createForm.name} onChange={e => setCreateForm({...createForm, name: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }} placeholder="e.g. John Doe" />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Work Email</label>
+                  <input type="email" required value={createForm.email} onChange={e => setCreateForm({...createForm, email: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }} placeholder="john@voicefirst.com" />
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Designated Role</label>
+                    <select 
+                      value={createForm.role} 
+                      onChange={e => setCreateForm({...createForm, role: e.target.value})} 
+                      disabled={user?.role === 'MANAGER'}
+                      style={{ width: '100%', padding: '12px', background: user?.role === 'MANAGER' ? 'var(--surface-hover)' : 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}
+                    >
+                      <option value="STAFF">STAFF MEMBER</option>
+                      {user?.role === 'ADMIN' && (
+                        <>
+                          <option value="MANAGER">BRANCH MANAGER</option>
+                          <option value="CX">CX ANALYST</option>
+                          <option value="ADMIN">ADMINISTRATOR</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Physical Branch</label>
+                    <select 
+                      value={createForm.branchId} 
+                      onChange={e => setCreateForm({...createForm, branchId: e.target.value})} 
+                      disabled={user?.role === 'MANAGER'}
+                      style={{ width: '100%', padding: '12px', background: user?.role === 'MANAGER' ? 'var(--surface-hover)' : 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}
+                    >
+                      <option value="">No specific branch</option>
+                      {branches.map(b => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button type="button" onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" disabled={submitting} style={{ flex: 1, padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
+                    {submitting ? 'Provisioning...' : 'Create Member'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,6 +67,8 @@ export class AuthService {
 
       return {
         requiresTwoFactor: true,
+        mustResetPassword: (user as any).mustResetPassword,
+        mustSetup2fa: false,
         tempToken,
         twoFactorMethod: user.twoFactorMethod || 'TOTP',
       };
@@ -79,6 +81,8 @@ export class AuthService {
     return {
       accessToken,
       requiresTwoFactor: false,
+      mustResetPassword: (user as any).mustResetPassword,
+      mustSetup2fa: true, // Force setup if not enabled
       user: {
         id: user.id,
         email: user.email,

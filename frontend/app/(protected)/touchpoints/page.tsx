@@ -45,17 +45,17 @@ export default function TouchpointsPage() {
       setLoading(true);
       const res: any = await api.get('/touchpoints');
       setTouchpoints(res.data || []);
-      
+
       if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
         const branchRes: any = await api.get('/branches');
         setBranches(branchRes.data || []);
-        
+
         const staffRes: any = await api.get('/users');
         // Filter to only show people with STAFF role if possible, or all accessible
         setStaffList(staffRes.data || []);
 
         if (user?.role === 'ADMIN' && branchRes.data?.length > 0) {
-           setFormData(f => ({ ...f, branchId: branchRes.data[0].id }));
+          setFormData(f => ({ ...f, branchId: branchRes.data[0].id }));
         }
       }
     } catch (error: any) {
@@ -71,7 +71,7 @@ export default function TouchpointsPage() {
 
   useEffect(() => {
     if (user) fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleDeploy = async (e: React.FormEvent) => {
@@ -108,19 +108,19 @@ export default function TouchpointsPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>Feedback collection interfaces natively tracked and deployed across physical branches.</p>
         </div>
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-          <button 
+          <button
             onClick={() => setShowDeployModal(true)}
-            style={{ 
-              padding: '12px 24px', 
-              background: 'var(--primary)', 
-              color: 'white', 
-              borderRadius: '12px', 
-              fontWeight: '700', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              border: 'none', 
-              cursor: 'pointer', 
+            style={{
+              padding: '12px 24px',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: 'none',
+              cursor: 'pointer',
               boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.3)',
               transition: 'all 0.2s'
             }}
@@ -195,13 +195,13 @@ export default function TouchpointsPage() {
             <form onSubmit={handleDeploy}>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Identifier Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }} placeholder="e.g. Lobby Concierge Terminal" />
+                <input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }} placeholder="e.g. Lobby Concierge Terminal" />
               </div>
 
               <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Category</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}>
+                  <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}>
                     <option value="BRANCH_DESK">Branch General Desk</option>
                     <option value="STAFF">Dedicated Staff Link</option>
                     <option value="ATM">ATM Kiosk</option>
@@ -211,9 +211,9 @@ export default function TouchpointsPage() {
 
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Assigned Branch</label>
-                  <select 
-                    value={formData.branchId} 
-                    onChange={e => setFormData({...formData, branchId: e.target.value})} 
+                  <select
+                    value={formData.branchId}
+                    onChange={e => setFormData({ ...formData, branchId: e.target.value })}
                     disabled={user?.role === 'MANAGER'}
                     style={{ width: '100%', padding: '12px', background: user?.role === 'MANAGER' ? 'var(--surface-hover)' : 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}
                   >
@@ -227,9 +227,9 @@ export default function TouchpointsPage() {
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Lead Staff Member (Optional)</label>
-                <select 
-                  value={formData.staffId} 
-                  onChange={e => setFormData({...formData, staffId: e.target.value})} 
+                <select
+                  value={formData.staffId}
+                  onChange={e => setFormData({ ...formData, staffId: e.target.value })}
                   style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}
                 >
                   <option value="">No specific assignment</option>
@@ -254,42 +254,142 @@ export default function TouchpointsPage() {
 
       {/* Modern Deep Aesthetic QR Code Presentation Modal */}
       {showQrModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200 }} onClick={() => setShowQrModal(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', padding: '48px', borderRadius: '40px', border: '1px solid var(--border)', width: '100%', maxWidth: '440px', textAlign: 'center', position: 'relative', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.2)' }}>
-            <button onClick={() => setShowQrModal(null)} style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--surface-hover)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px', borderRadius: '50%' }}><X size={20} /></button>
-            <QrCode size={48} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
-            <h2 style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--text)' }}>Feedback Interface</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '40px' }}>{showQrModal.name} &bull; {showQrModal.type}</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200, padding: '24px' }} onClick={() => setShowQrModal(null)}>
+          {/* SCREEN MODAL */}
+          <div 
+            className="no-print" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              background: 'var(--surface)', 
+              padding: '48px', 
+              borderRadius: '32px', 
+              border: '1px solid var(--border)', 
+              width: '100%', 
+              maxWidth: '440px', 
+              textAlign: 'center', 
+              position: 'relative', 
+              boxShadow: '0 50px 100px -20px rgba(0,0,0,0.4)',
+            }}
+          >
+            <button onClick={() => setShowQrModal(null)} style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--surface-hover)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '10px', borderRadius: '50%', display: 'flex' }}><X size={20} /></button>
+            <div style={{ width: '64px', height: '64px', background: 'rgba(99,102,241,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <QrCode size={32} color="var(--primary)" />
+            </div>
+            
+            <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px', color: 'var(--text)', letterSpacing: '-1px' }}>Native Deployment</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginBottom: '40px' }}>{showQrModal.name} &bull; {showQrModal.branch?.name}</p>
 
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', display: 'inline-block', marginBottom: '32px' }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '24px', display: 'inline-block', marginBottom: '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <QRCodeSVG 
                 value={`${window.location.origin}/feedback?t=${showQrModal.token}`} 
                 size={220}
                 bgColor="#ffffff"
                 fgColor="#0f172a" 
-                level="Q"
+                level="H"
               />
             </div>
 
-            <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', padding: '16px', borderRadius: '12px', textAlign: 'left' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold', letterSpacing: '0.5px', marginBottom: '4px' }}>Secure UUID Endpoint</div>
-              <code style={{ color: 'var(--text)', fontSize: '12px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                {showQrModal.token}
-              </code>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <button 
+                onClick={() => window.print()}
+                style={{ 
+                  width: '100%', 
+                  padding: '18px', 
+                  background: 'var(--primary)', 
+                  color: 'white', 
+                  borderRadius: '16px', 
+                  fontWeight: '800', 
+                  border: 'none',
+                  cursor: 'pointer', 
+                  fontSize: '15px', 
+                  boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px'
+                }}
+              >
+                <Plus size={18} /> Print Terminal Standee
+              </button>
+            </div>
+          </div>
+
+          {/* PRINT VIEW (Hidden on screen) */}
+          <div className="print-only">
+            <div className="print-badge">Help Us Craft Perfection</div>
+            <h1>Your feedback is the compass that guides our growth.</h1>
+            <div className="print-loc">{showQrModal.name} &bull; {showQrModal.branch?.name}</div>
+            
+            <div className="print-qr-box">
+              <QRCodeSVG 
+                value={`${window.location.origin}/feedback?t=${showQrModal.token}`} 
+                size={550}
+                bgColor="#ffffff"
+                fgColor="#000000" 
+                level="H"
+              />
             </div>
             
-            <a 
-              href={`/feedback?t=${showQrModal.token}`} 
-              target="_blank"
-              style={{ display: 'block', marginTop: '16px', color: 'var(--primary)', fontSize: '12px', textDecoration: 'underline' }}
-            >
-              QA Preview: Open Feedback Page in New Tab
-            </a>
-            
-            <button style={{ marginTop: '24px', width: '100%', padding: '16px', background: 'transparent', border: '1px dashed var(--primary)', color: 'var(--primary)', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s' }}>
-              Print Terminal Code
-            </button>
+            <div className="print-cta">SCAN TO SHARE YOUR EXPERIENCE</div>
+            <div className="print-brand">SECURED BY VOICEFIRST SYSTEM</div>
           </div>
+
+          <style jsx global>{`
+            .print-only { display: none; }
+            
+            @media print {
+              @page { margin: 0; size: auto; }
+              body { margin: 0; padding: 0; }
+              .no-print { display: none !important; }
+              .print-only { 
+                display: flex !important; 
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: fixed !important;
+                inset: 0 !important;
+                background: white !important;
+                text-align: center !important;
+                padding: 40px !important;
+              }
+              .print-badge {
+                font-size: 20px;
+                font-weight: 800;
+                color: #6366f1;
+                margin-bottom: 24px;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+              }
+              .print-only h1 { 
+                font-size: 52px; 
+                color: #0f172a; 
+                margin: 0; 
+                max-width: 800px;
+                line-height: 1.1;
+                font-weight: 900;
+              }
+              .print-loc { font-size: 24px; color: #64748b; margin-top: 16px; font-weight: 500; }
+              .print-qr-box {
+                margin: 60px 0;
+                padding: 32px;
+                border: 2px solid #f1f5f9;
+                border-radius: 48px;
+              }
+              .print-cta {
+                font-size: 32px;
+                font-weight: 900;
+                color: #0f172a;
+                letter-spacing: 4px;
+              }
+              .print-brand {
+                font-size: 14px;
+                font-weight: 800;
+                color: #cbd5e1;
+                margin-top: 80px;
+                letter-spacing: 6px;
+              }
+            }
+          `}</style>
         </div>
       )}
     </div>

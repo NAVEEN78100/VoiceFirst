@@ -2,9 +2,11 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,10 +19,35 @@ export class UserService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(
+    createUserDto: CreateUserDto,
+    currentUser: { id: string; role: Role; branchId?: string | null; email?: string },
+  ) {
     const normalizedEmail = createUserDto.email.toLowerCase().trim();
 
-    // Check if user already exists
+    // 1. RBAC Check
+    if (currentUser.role === Role.MANAGER) {
+      // Manager can only create STAFF
+      if (createUserDto.role !== Role.STAFF) {
+        throw new ForbiddenException(
+          'Managers are only authorized to create Staff accounts',
+        );
+      }
+      // Manager can only create for their own branch
+      if (createUserDto.branchId && createUserDto.branchId !== currentUser.branchId) {
+        throw new ForbiddenException(
+          'Managers are not authorized to create accounts for other branches',
+        );
+      }
+      // Ensure branchId is set to manager's branch if not provided or to ensure it matches
+      createUserDto.branchId = currentUser.branchId || undefined;
+    } else if (currentUser.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'You do not have permission to create user accounts',
+      );
+    }
+
+    // 2. Uniqueness Check
     const existing = await this.prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
@@ -29,23 +56,43 @@ export class UserService {
       throw new ConflictException('A user with this email already exists');
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      this.SALT_ROUNDS,
-    );
+    // 3. Password Logic
+    let rawPassword = createUserDto.password;
+    const mustResetPassword = !rawPassword; // Force reset if auto-generated
 
+    if (!rawPassword) {
+      // Generate secure 12-char temp password
+      rawPassword = crypto.randomBytes(9).toString('base64');
+      // Ensure it meets standard complexity (simple version for temp)
+      rawPassword = `Temp@${rawPassword}`;
+    }
+
+    const hashedPassword = await bcrypt.hash(rawPassword, this.SALT_ROUNDS);
+
+    // 4. Persistence
     const user = await this.prisma.user.create({
       data: {
         email: normalizedEmail,
+        name: createUserDto.name || null,
         password: hashedPassword,
         role: createUserDto.role,
         branchId: createUserDto.branchId || null,
-      },
+        mustResetPassword,
+      } as any,
     });
 
-    this.logger.log(`User created: ${user.email} with role ${user.role}`);
-    return this.sanitizeUser(user);
+    this.logger.log(
+      `User created: ${user.email} (Role: ${user.role}, Branch: ${user.branchId}) by ${currentUser.email || currentUser.id}`,
+    );
+
+    const result = this.sanitizeUser(user);
+
+    // If password was generated, return it once (securely)
+    if (mustResetPassword) {
+      (result as any).temporaryPassword = rawPassword;
+    }
+
+    return result;
   }
 
   async findAll(currentUser: { role: Role; branchId?: string | null }) {
@@ -98,11 +145,12 @@ export class UserService {
         updateUserDto.password,
         this.SALT_ROUNDS,
       );
+      data.mustResetPassword = false;
     }
 
     const user = await this.prisma.user.update({
-      where: { id },
-      data,
+      where: { id: id },
+      data: data,
     });
 
     this.logger.log(`User updated: ${user.email}`);
