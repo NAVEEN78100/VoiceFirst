@@ -53,7 +53,7 @@ interface Meta {
 // --- Components ---
 
 const StatusIndicator = ({ hasCase }: { hasCase: boolean }) => (
-  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${hasCase ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
+  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${hasCase ? 'bg-orange-500 text-white' : 'bg-green-500/10 text-green-700 border border-green-500/20'}`}>
     {hasCase ? <ShieldAlert size={10} /> : <ShieldCheck size={10} />}
     {hasCase ? 'Case Opened' : 'No Case'}
   </div>
@@ -296,11 +296,11 @@ export default function FeedbackExplorerPage() {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               onClick={() => setSelectedFeedback(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
             <motion.div 
               layoutId={selectedFeedback.id}
-              className="relative w-full max-w-2xl bg-[var(--surface)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-2xl"
+              className="relative w-full max-w-2xl bg-[var(--surface)] border border-[var(--border)] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10"
             >
               <div className="p-8 space-y-8">
                 <div className="flex justify-between items-start">

@@ -42,47 +42,58 @@ interface TrendData {
 
 // --- Components ---
 
-const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }: any) => (
-  <motion.div 
-    whileHover={{ y: -4, boxShadow: '0 12px 20px -10px rgba(0,0,0,0.1)' }}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] relative overflow-hidden group"
-  >
-    <div className="flex justify-between items-start relative z-10">
-      <div>
-        <h3 className="text-[var(--text-muted)] text-sm font-medium mb-1">{title}</h3>
-        <p className="text-3xl font-bold tracking-tight">{value}</p>
-        <div className="flex items-center gap-1.5 mt-2">
-          {trend !== undefined && (
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${trend > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-              {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-              {Math.abs(trend)}%
-            </span>
-          )}
-          <span className="text-xs text-[var(--text-muted)] font-medium">{subtitle}</span>
+const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }: any) => {
+  const colorStyles: any = {
+    blue: { bg: 'bg-indigo-50', text: 'text-indigo-600', glow: 'bg-indigo-200' },
+    yellow: { bg: 'bg-amber-50', text: 'text-amber-600', glow: 'bg-amber-200' },
+    red: { bg: 'bg-rose-50', text: 'text-rose-600', glow: 'bg-rose-200' },
+    green: { bg: 'bg-emerald-50', text: 'text-emerald-600', glow: 'bg-emerald-200' },
+    orange: { bg: 'bg-orange-50', text: 'text-orange-600', glow: 'bg-orange-200' }
+  };
+  const style = colorStyles[color] || colorStyles.blue;
+  
+  return (
+    <motion.div 
+      whileHover={{ y: -4, boxShadow: '0 20px 40px -20px rgba(0,0,0,0.1)' }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-[var(--surface)] p-6 rounded-3xl border border-[var(--border)] relative overflow-hidden group"
+    >
+      <div className="flex justify-between items-start relative z-10">
+        <div>
+          <h3 className="text-[var(--text-muted)] text-sm font-semibold mb-1 tracking-tight">{title}</h3>
+          <p className="text-4xl font-black tracking-tighter text-[var(--text)]">{value}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            {trend !== undefined && (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${trend > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                {Math.abs(trend)}%
+              </span>
+            )}
+            <span className="text-[11px] text-[var(--text-muted)] font-medium">{subtitle}</span>
+          </div>
+        </div>
+        <div className={`p-4 rounded-2xl ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-500 ease-out shadow-sm`}>
+          <Icon size={24} />
         </div>
       </div>
-      <div className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform duration-300`}>
-        <Icon size={22} />
-      </div>
-    </div>
-    {/* Subtle Background Glow */}
-    <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-${color}-500/5 blur-3xl`} />
-  </motion.div>
-);
+      {/* Subtle Background Glow */}
+      <div className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full ${style.glow} opacity-10 blur-3xl group-hover:opacity-20 transition-opacity duration-500`} />
+    </motion.div>
+  );
+};
 
-const ChartCard = ({ title, children, icon: Icon }: any) => (
+const ChartCard = ({ title, children, icon: Icon, className = "" }: any) => (
   <motion.div 
     initial={{ opacity: 0, scale: 0.98 }}
     animate={{ opacity: 1, scale: 1 }}
-    className="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] overflow-hidden"
+    className={`bg-[var(--surface)] p-8 rounded-3xl border border-[var(--border)] overflow-hidden shadow-sm shadow-slate-200/50 ${className}`}
   >
-    <div className="flex items-center gap-2 mb-6">
-      <div className="p-2 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
-        <Icon size={18} />
+    <div className="flex items-center gap-3 mb-8">
+      <div className="p-2.5 rounded-xl bg-slate-50 text-[var(--primary)] border border-slate-100 shadow-sm">
+        <Icon size={20} />
       </div>
-      <h2 className="text-lg font-semibold">{title}</h2>
+      <h2 className="text-xl font-bold tracking-tight text-[var(--text)]">{title}</h2>
     </div>
     <div className="h-[300px] w-full">
       {children}

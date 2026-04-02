@@ -6,6 +6,11 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { Network, Plus, QrCode, User as UserIcon, Loader2, X } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
+interface StaffUser {
+  id: string;
+  email: string;
+}
+
 interface Touchpoint {
   id: string;
   name: string;
@@ -20,6 +25,7 @@ export default function TouchpointsPage() {
   const { user } = useAuth();
   const [touchpoints, setTouchpoints] = useState<Touchpoint[]>([]);
   const [branches, setBranches] = useState<{ id: string, name: string }[]>([]);
+  const [staffList, setStaffList] = useState<StaffUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modal States
@@ -31,6 +37,7 @@ export default function TouchpointsPage() {
     name: '',
     type: 'BRANCH_DESK',
     branchId: user?.branchId || '',
+    staffId: '',
   });
 
   const fetchData = async () => {
@@ -42,6 +49,11 @@ export default function TouchpointsPage() {
       if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
         const branchRes: any = await api.get('/branches');
         setBranches(branchRes.data || []);
+        
+        const staffRes: any = await api.get('/users');
+        // Filter to only show people with STAFF role if possible, or all accessible
+        setStaffList(staffRes.data || []);
+
         if (user?.role === 'ADMIN' && branchRes.data?.length > 0) {
            setFormData(f => ({ ...f, branchId: branchRes.data[0].id }));
         }
@@ -69,7 +81,7 @@ export default function TouchpointsPage() {
     try {
       await api.post('/touchpoints', formData);
       setShowDeployModal(false);
-      setFormData({ name: '', type: 'BRANCH_DESK', branchId: user?.branchId || branches[0]?.id || '' });
+      setFormData({ name: '', type: 'BRANCH_DESK', branchId: user?.branchId || (branches.length > 0 ? branches[0].id : ''), staffId: '' });
       await fetchData();
     } catch (error: any) {
       alert(error.response?.data?.message || "Deployment failed");
@@ -88,19 +100,32 @@ export default function TouchpointsPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px' }}>
         <div>
-          <h1 style={{ fontSize: '32px', color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Network size={28} color="var(--primary)" /> Touchpoint Endpoints
+          <h1 style={{ fontSize: '36px', fontWeight: '900', color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-1px' }}>
+            <Network size={32} color="var(--primary)" /> Touchpoints
           </h1>
-          <p style={{ color: 'var(--text-muted)' }}>Feedback collection interfaces natively tracked and deployed across physical branches.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>Feedback collection interfaces natively tracked and deployed across physical branches.</p>
         </div>
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
           <button 
             onClick={() => setShowDeployModal(true)}
-            style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: 'white', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
+            style={{ 
+              padding: '12px 24px', 
+              background: 'var(--primary)', 
+              color: 'white', 
+              borderRadius: '12px', 
+              fontWeight: '700', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              border: 'none', 
+              cursor: 'pointer', 
+              boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.3)',
+              transition: 'all 0.2s'
+            }}
           >
-            <Plus size={18} /> Deploy Touchpoint
+            <Plus size={18} /> Deploy New
           </button>
         )}
       </header>
@@ -137,8 +162,8 @@ export default function TouchpointsPage() {
                   </div>
                 </td>
                 <td style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: point.isActive ? '#10b981' : 'var(--text-muted)', fontWeight: 500, fontSize: '13px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: point.isActive ? '#10b981' : 'var(--text-muted)', boxShadow: point.isActive ? '0 0 8px rgba(16, 185, 129, 0.4)' : 'none' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: point.isActive ? 'var(--secondary)' : 'var(--text-muted)', fontWeight: 600, fontSize: '13px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: point.isActive ? 'var(--secondary)' : 'var(--text-muted)', boxShadow: point.isActive ? '0 0 10px var(--secondary)' : 'none' }} />
                     {point.isActive ? 'Actively Collecting' : 'Standby'}
                   </div>
                 </td>
@@ -162,10 +187,10 @@ export default function TouchpointsPage() {
       </div>
 
       {showDeployModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--surface)', padding: '32px', borderRadius: '16px', border: '1px solid var(--border)', width: '100%', maxWidth: '440px' }}>
-            <h2 style={{ fontSize: '20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Plus color="var(--primary)" /> Deploy Service Touchpoint
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--surface)', padding: '40px', borderRadius: '32px', border: '1px solid var(--border)', width: '100%', maxWidth: '480px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', letterSpacing: '-0.5px' }}>
+              <Plus color="var(--primary)" /> New Touchpoint
             </h2>
             <form onSubmit={handleDeploy}>
               <div style={{ marginBottom: '16px' }}>
@@ -200,6 +225,22 @@ export default function TouchpointsPage() {
                 </div>
               </div>
 
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Lead Staff Member (Optional)</label>
+                <select 
+                  value={formData.staffId} 
+                  onChange={e => setFormData({...formData, staffId: e.target.value})} 
+                  style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }}
+                >
+                  <option value="">No specific assignment</option>
+                  {staffList.filter(s => !formData.branchId || (s as any).branchId === formData.branchId).map(s => (
+                    <option key={s.id} value={s.id}>{s.email}</option>
+                  ))}
+                  {/* Show all if filtering would result in 0? Or just show all? */}
+                  {staffList.length === 0 && <option disabled>No local staff found</option>}
+                </select>
+              </div>
+
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button type="button" onClick={() => setShowDeployModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
                 <button type="submit" disabled={submitting} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
@@ -213,11 +254,10 @@ export default function TouchpointsPage() {
 
       {/* Modern Deep Aesthetic QR Code Presentation Modal */}
       {showQrModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200 }} onClick={() => setShowQrModal(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', padding: '40px', borderRadius: '24px', border: '1px solid var(--border)', width: '100%', maxWidth: '400px', textAlign: 'center', position: 'relative', boxShadow: '0 24px 48px rgba(0,0,0,0.5)' }}>
-            <button onClick={() => setShowQrModal(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
-            
-            <QrCode size={40} color="var(--primary)" style={{ margin: '0 auto 16px', opacity: 0.8 }} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200 }} onClick={() => setShowQrModal(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', padding: '48px', borderRadius: '40px', border: '1px solid var(--border)', width: '100%', maxWidth: '440px', textAlign: 'center', position: 'relative', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.2)' }}>
+            <button onClick={() => setShowQrModal(null)} style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--surface-hover)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px', borderRadius: '50%' }}><X size={20} /></button>
+            <QrCode size={48} color="var(--primary)" style={{ margin: '0 auto 20px' }} />
             <h2 style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--text)' }}>Feedback Interface</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '40px' }}>{showQrModal.name} &bull; {showQrModal.type}</p>
 

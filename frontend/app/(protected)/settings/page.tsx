@@ -30,7 +30,7 @@ export default function SettingsPage() {
       setQrCodeDataUrl(res.data.qrCode);
       setSetupStep('QR');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to initialize 2FA setup');
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to initialize 2FA setup');
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ export default function SettingsPage() {
       setSetupStep('RECOVERY');
       await reloadUser();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Invalid code. Please try again.');
+      setErrorMsg(err.response?.data?.message || err.message || 'Invalid code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export default function SettingsPage() {
       await reloadUser();
       alert('2FA has been successfully disabled.');
     } catch (err: any) {
-      alert(err.message || 'Failed to disable 2FA.');
+      alert(err.response?.data?.message || err.message || 'Failed to disable 2FA.');
     } finally {
       setLoading(false);
     }

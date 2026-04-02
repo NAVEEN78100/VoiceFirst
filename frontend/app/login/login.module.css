@@ -16,7 +16,7 @@
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05); /* Softer shadow */
   z-index: 10;
 }
 
@@ -26,9 +26,9 @@
 }
 
 .logo {
-  font-size: 28px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+  font-size: 32px; /* Slightly larger */
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
@@ -88,9 +88,9 @@
 }
 
 .errorBox {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.1);
+  color: var(--danger);
   padding: 12px;
   border-radius: var(--radius-sm);
   font-size: 13px;
@@ -131,7 +131,7 @@
   width: 600px;
   height: 600px;
   background: radial-gradient(circle, var(--primary) 0%, transparent 60%);
-  opacity: 0.15;
+  opacity: 0.1; /* Lowered opacity */
   filter: blur(80px);
   border-radius: 50%;
   top: -100px;
