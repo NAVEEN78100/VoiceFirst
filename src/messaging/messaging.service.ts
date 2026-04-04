@@ -348,7 +348,7 @@ export class MessagingService implements OnModuleInit, OnModuleDestroy {
   }
 
   private buildSurveyUrl(touchpointToken: string, messageToken: string, caseId?: string): string {
-    const frontendBaseUrl = this.configService.get<string>('FRONTEND_BASE_URL', 'http://localhost:3001');
+    const frontendBaseUrl = this.configService.get<string>('FRONTEND_BASE_URL', 'http://localhost:3000');
     const params = new URLSearchParams({ t: touchpointToken, m: messageToken });
     if (caseId) params.set('c', caseId);
     return `${frontendBaseUrl}/feedback?${params.toString()}`;

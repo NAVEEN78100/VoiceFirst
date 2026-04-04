@@ -108,9 +108,10 @@ graph TD
 ## 🚀 Quick Setup Guide
 
 ### 1. Prerequisites
--   **Node.js** (v18.0 or higher)
--   **npm** or **yarn**
--   **PostgreSQL** instance (local or Cloud)
+- **Node.js** (v18.0 or higher)
+- **npm** or **yarn**
+- **PostgreSQL** instance (local or Cloud)
+- **OpenSSL** (Required for Prisma/Auth)
 
 ### 2. Installation
 ```bash
@@ -128,22 +129,59 @@ cd ..
 ```
 
 ### 3. Environment Config
-Copy `.env.example` to `.env` in both the root and `frontend/` folders:
+Copy `.env.example` to `.env` in both the root and `frontend/` folders.
+
+**Root `.env` Configuration:**
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/voicefirst"
+PORT=3001 # Set to 3001 to avoid conflict with Next.js (port 3000)
+DATABASE_URL="postgresql://user:password@localhost:5432/voicefirst?schema=public"
 JWT_SECRET="your_secure_secret"
 TWO_FACTOR_APP_NAME="VoiceFirst"
+TOTP_ENCRYPTION_KEY="32-character-random-key-here"
 ```
 
-### 4. Database & Launch
+**Frontend `frontend/.env` Configuration:**
+```env
+NEXT_PUBLIC_API_URL="http://localhost:3001/api/v1"
+```
+
+### 4. Database Setup & Launch
+
+#### **Option A: Synchronized Launch (Recommended)**
+Start both services concurrently in a single terminal window:
 ```bash
-# Run Database Migrations
-npx prisma migrate dev
+# Automated First-Time Setup (Migrations + Client Generation + Seeding)
+npm run db:setup
 
 # Start both services
-# (Backend starts on 3000, Frontend on 3001)
 npm run dev
 ```
+
+#### **Option B: Separate Terminals (Advanced/Debugging)**
+If you prefer to see logs separately or manage processes independently:
+
+**Terminal 1: Backend**
+```bash
+# From the root directory
+npm run start:dev
+```
+
+**Terminal 2: Frontend**
+```bash
+# From the root directory
+cd frontend
+npm run dev
+```
+
+### 5. Default Credentials (Development)
+The `db:setup` command seeds the database with the following test accounts:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@voicefirst.com` | `Admin@123!` |
+| **Manager** | `manager@voicefirst.com` | `Manager@123!` |
+| **Staff** | `staff@voicefirst.com` | `Staff@123!` |
+| **CX User** | `cx@voicefirst.com` | `CxUser@123!` |
 
 ---
 

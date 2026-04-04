@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/context/AuthContext';
-import { Users, UserPlus, Mail, Shield, MapPin, Loader2, Save, X, Edit2 } from 'lucide-react';
+import { Users, UserPlus, Mail, Shield, MapPin, Loader2, Save, X, Edit2, Copy, Check } from 'lucide-react';
 
 interface StaffMember {
   id: string;
@@ -44,6 +44,13 @@ export default function StaffPage() {
     role: user?.role === 'MANAGER' ? 'STAFF' : 'STAFF',
     branchId: user?.branchId || ''
   });
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const fetchData = async () => {
     try {
@@ -285,9 +292,31 @@ export default function StaffPage() {
                     <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Email Address</div>
                     <div style={{ fontWeight: '600' }}>{createForm.email}</div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Temporary Password</div>
-                    <code style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900', letterSpacing: '1px' }}>{createdPassword}</code>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 'bold' }}>Temporary Password</div>
+                      <code style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900', letterSpacing: '1px' }}>{createdPassword}</code>
+                    </div>
+                    <button 
+                      onClick={() => handleCopy(createdPassword)}
+                      style={{ 
+                        padding: '8px', 
+                        background: copied ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-hover)', 
+                        border: '1px solid var(--border)', 
+                        borderRadius: '8px', 
+                        cursor: 'pointer',
+                        color: copied ? '#10b981' : 'var(--text)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {copied ? <Check size={14} /> : <Copy size={14} />}
+                      {copied ? 'Copied' : 'Copy'}
+                    </button>
                   </div>
                 </div>
 

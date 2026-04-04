@@ -279,7 +279,24 @@ export default function TouchpointsPage() {
             <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px', color: 'var(--text)', letterSpacing: '-1px' }}>Native Deployment</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginBottom: '40px' }}>{showQrModal.name} &bull; {showQrModal.branch?.name}</p>
 
-            <div style={{ background: 'white', padding: '24px', borderRadius: '24px', display: 'inline-block', marginBottom: '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <a 
+              href={`${window.location.origin}/feedback?t=${showQrModal.token}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ 
+                background: 'white', 
+                padding: '24px', 
+                borderRadius: '24px', 
+                display: 'inline-block', 
+                marginBottom: '16px', 
+                boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                textDecoration: 'none'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
               <QRCodeSVG 
                 value={`${window.location.origin}/feedback?t=${showQrModal.token}`} 
                 size={220}
@@ -287,7 +304,10 @@ export default function TouchpointsPage() {
                 fgColor="#0f172a" 
                 level="H"
               />
-            </div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Click to Preview Link
+              </div>
+            </a>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <button 

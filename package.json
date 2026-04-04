@@ -24,7 +24,8 @@
     "prisma:seed": "node prisma/seed.js",
     "prisma:studio": "npx prisma studio",
     "db:reset": "npx prisma migrate reset --force && node prisma/seed.js",
-    "db:setup": "npx prisma migrate dev --name init && npx prisma generate && node prisma/seed.js"
+    "db:setup": "npx prisma migrate dev --name init && npx prisma generate && node prisma/seed.js",
+    "dev": "concurrently \"npm run start:dev\" \"cd frontend && npm run dev\""
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -76,6 +77,7 @@
     "@types/supertest": "^6.0.2",
     "@types/ua-parser-js": "^0.7.39",
     "@types/uuid": "^10.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
