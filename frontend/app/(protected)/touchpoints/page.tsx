@@ -59,11 +59,9 @@ export default function TouchpointsPage() {
         }
       }
     } catch (error: any) {
-      console.error('Touchpoints Fetch Error:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      const errorMsg = error.response?.data?.message || error.message || 'Unknown network error';
+      console.error('Touchpoints Fetch Error:', errorMsg);
+      console.dir(error); // Logs whole error object in console for expandability
     } finally {
       setLoading(false);
     }

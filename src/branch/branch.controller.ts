@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { BranchService } from './branch.service';
 import { CreateBranchDto, UpdateBranchDto } from './dto/branch.dto';
@@ -22,7 +23,9 @@ export class BranchController {
 
   @Post()
   @Roles(Role.ADMIN) // Only ADMIN can create a global branch
-  create(@Body() createBranchDto: CreateBranchDto) {
+  create(@Body() createBranchDto: CreateBranchDto, @Req() req: any) {
+    console.log(`[BranchController] Create request by user:`, req.user?.email, 'Role:', req.user?.role);
+    console.log(`[BranchController] Data:`, JSON.stringify(createBranchDto));
     return this.branchService.create(createBranchDto);
   }
 

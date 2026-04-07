@@ -112,6 +112,27 @@ export class FeedbackService {
     };
   }
 
+  async getTouchpointContext(token: string) {
+    const touchpoint = await this.prisma.touchpoint.findUnique({
+      where: { token },
+      include: {
+        branch: {
+          select: { name: true, location: true }
+        }
+      }
+    });
+
+    if (!touchpoint || !touchpoint.isActive) {
+      throw new NotFoundException('Invalid or inactive routing touchpoint constraint.');
+    }
+
+    return {
+      name: touchpoint.name,
+      type: touchpoint.type,
+      branch: touchpoint.branch
+    };
+  }
+
   private maskIp(ip: string): string {
     if (!ip) return '';
     // Mask IPv4: 1.2.3.4 -> 1.2.3.0

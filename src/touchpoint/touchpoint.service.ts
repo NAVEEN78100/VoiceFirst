@@ -23,14 +23,22 @@ export class TouchpointService {
       whereCondition = { staffId: user.id };
     }
 
-    return this.prisma.touchpoint.findMany({
-      where: whereCondition,
-      include: {
-        branch: { select: { id: true, name: true, code: true } },
-        staff: { select: { id: true, email: true, role: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      console.log(`[TouchpointService] findAll for user:`, user.email, 'Role:', user.role, 'Filter:', JSON.stringify(whereCondition));
+      const touchpoints = await this.prisma.touchpoint.findMany({
+        where: whereCondition,
+        include: {
+          branch: { select: { id: true, name: true, code: true } },
+          staff: { select: { id: true, email: true, role: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      console.log(`[TouchpointService] Found ${touchpoints.length} touchpoints`);
+      return touchpoints;
+    } catch (error: any) {
+      console.error('[TouchpointService] Error in findAll:', error.message, error.stack);
+      throw error;
+    }
   }
 
   async findOne(id: string, user: any) {
@@ -55,6 +63,31 @@ export class TouchpointService {
     }
 
     return touchpoint;
+  }
+
+  /**
+   * Public method to retrieve context (Branch + TP Name) for a feedback form.
+   * No user context required.
+   */
+  async findByToken(token: string) {
+    const touchpoint = await this.prisma.touchpoint.findUnique({
+      where: { token },
+      include: {
+        branch: {
+          select: { name: true, location: true }
+        }
+      }
+    });
+
+    if (!touchpoint) {
+      throw new NotFoundException('Touchpoint link is invalid or has been decommissioned.');
+    }
+
+    return {
+      name: touchpoint.name,
+      type: touchpoint.type,
+      branch: touchpoint.branch
+    };
   }
 
   async create(createTouchpointDto: CreateTouchpointDto, user: any) {

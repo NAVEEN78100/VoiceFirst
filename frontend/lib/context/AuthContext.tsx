@@ -53,7 +53,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response: any = await api.get('/users/me');
         setUser(response.data);
       } catch (err) {
-        if (pathname.includes('/dashboard') || pathname.includes('/settings')) {
+        setUser(null);
+        const protectedPaths = ['/dashboard', '/settings', '/feedbacks', '/branches', '/touchpoints', '/cases'];
+        if (protectedPaths.some(path => pathname.startsWith(path))) {
           router.push('/login');
         }
       } finally {

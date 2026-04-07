@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, Req, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, Req, UseGuards, Param } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/feedback.dto';
 import { Throttle } from '@nestjs/throttler';
@@ -18,6 +18,12 @@ export class FeedbackController {
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // Aggressive anti-spam: max 5 submissions per IP per 60 seconds
   create(@Body() createFeedbackDto: CreateFeedbackDto, @Req() req: Request) {
     return this.feedbackService.submitFeedback(createFeedbackDto, req);
+  }
+
+  @Get('context/:token')
+  @HttpCode(HttpStatus.OK)
+  getTouchpointContext(@Param('token') token: string) {
+    return this.feedbackService.getTouchpointContext(token);
   }
 
   @Get('explorer')

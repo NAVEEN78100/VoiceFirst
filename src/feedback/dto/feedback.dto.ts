@@ -7,18 +7,18 @@ export class CreateFeedbackDto {
   rating: number;
 
   @IsString()
-  @IsOptional()
-  @Length(1, 1000)
-  comment?: string;
+  @IsNotEmpty()
+  @Length(5, 1000)
+  comment: string;
 
   @IsString()
   @IsNotEmpty()
   touchpointToken: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @Length(7, 20)
-  phone?: string;
+  phone: string;
 
   @IsString()
   @IsOptional()

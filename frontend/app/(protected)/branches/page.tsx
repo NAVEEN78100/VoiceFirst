@@ -52,8 +52,9 @@ export default function BranchesPage() {
       setShowModal(false);
       setFormData({ name: '', code: '', location: '' });
       await fetchBranches();
-    } catch (error) {
-      alert("Failed to create branch");
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.message || "Failed to create branch";
+      alert(Array.isArray(message) ? message.join(', ') : message);
     } finally {
       setSubmitting(false);
     }
@@ -158,13 +159,14 @@ export default function BranchesPage() {
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button type="button" onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
                 <button type="submit" disabled={submitting} style={{ flex: 1, padding: '12px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
-                  {submitting ? 'Authenticating...' : 'Deploy Node'}
+                  {submitting ? 'Provisioning...' : 'Deploy Node'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
