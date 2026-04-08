@@ -9,8 +9,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest<TUser = any>(err: any, user: TUser, info: any): TUser {
     if (err || !user) {
+      if (err) console.error('[JwtAuthGuard] Error:', err);
+      if (info) console.warn('[JwtAuthGuard] Info:', info);
+      if (!user) console.warn('[JwtAuthGuard] User not found or token invalid');
+
       throw new UnauthorizedException(
-        err?.message || 'Invalid or expired authentication token',
+        err?.message || info?.message || 'Invalid or expired authentication token',
       );
     }
     return user;

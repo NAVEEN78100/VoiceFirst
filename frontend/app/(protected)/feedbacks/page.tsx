@@ -300,7 +300,7 @@ export default function FeedbackExplorerPage() {
             />
             <motion.div 
               layoutId={selectedFeedback.id}
-              className="relative w-full max-w-2xl bg-[var(--surface)] border border-[var(--border)] rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10"
+              className="relative w-full max-w-2xl bg-[var(--surface)] border border-[var(--border)] rounded-[32px] overflow-hidden shadow-2xl shadow-red-500/10"
             >
               <div className="p-8 space-y-8">
                 <div className="flex justify-between items-start">

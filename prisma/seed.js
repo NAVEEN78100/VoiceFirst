@@ -18,24 +18,28 @@ const SALT_ROUNDS = 12;
 
 const seedUsers = [
   {
+    id: '00000000-0000-0000-0000-000000000001',
     email: 'admin@voicefirst.com',
     password: 'Admin@123!',
     role: 'ADMIN',
     branchId: null,
   },
   {
+    id: '00000000-0000-0000-0000-000000000002',
     email: 'manager@voicefirst.com',
     password: 'Manager@123!',
     role: 'MANAGER',
     branchId: 'branch-001',
   },
   {
+    id: '00000000-0000-0000-0000-000000000003',
     email: 'staff@voicefirst.com',
     password: 'Staff@123!',
     role: 'STAFF',
     branchId: 'branch-001',
   },
   {
+    id: '00000000-0000-0000-0000-000000000004',
     email: 'cx@voicefirst.com',
     password: 'CxUser@123!',
     role: 'CX',
@@ -89,9 +93,10 @@ async function main() {
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
-    // Create user
+    // Create user with fixed ID
     const user = await prisma.user.create({
       data: {
+        id: userData.id,
         email: normalizedEmail,
         password: hashedPassword,
         role: userData.role,

@@ -66,6 +66,12 @@ export class FeedbackService {
       data: {
         rating: dto.rating,
         comment: dto.comment,
+        issueTopic: dto.issueTopic,
+        serviceCategory: dto.serviceCategory,
+        issueTags: dto.issueTags,
+        followUpRequested: dto.followUpRequested ?? false,
+        trackType: dto.trackType ?? 'ANONYMOUS',
+        channel: dto.channel ?? 'QR',
         phone: dto.phone || messageLog?.phone,
         touchpoint: { connect: { id: touchpoint.id } },
         branch: { connect: { id: touchpoint.branchId } },
@@ -96,6 +102,8 @@ export class FeedbackService {
       touchpointId: feedback.touchpointId,
       branchId: feedback.branchId,
       hasPhone: !!feedback.phone,
+      issueTopic: feedback.issueTopic || undefined,
+      commentPreview: feedback.comment ? (feedback.comment.length > 50 ? feedback.comment.substring(0, 50) + '...' : feedback.comment) : '',
       submittedAt: feedback.createdAt.toISOString(),
     };
 
@@ -103,12 +111,35 @@ export class FeedbackService {
 
     // 4. Closed-Loop Recovery Logic (Delta Calculation)
     if (dto.caseId) {
-      this.calculateRecoveryMetrics(dto.caseId, dto.rating);
+      this.calculateRecoveryMetrics(dto.caseId, dto.rating, dto.comment);
+    }
+
+    // 5. Customer Loyalty System (Perk Points)
+    let perkPointsAwarded = 0;
+    let totalPerkPoints = 0;
+
+    if (feedback.phone) {
+      perkPointsAwarded = 50; // BRD fixed reward for identified feedback
+      const customer = await this.prisma.customer.upsert({
+        where: { phone: feedback.phone },
+        update: { 
+          perkPoints: { increment: perkPointsAwarded },
+          lastAwardedAt: new Date(),
+        },
+        create: {
+          phone: feedback.phone,
+          perkPoints: perkPointsAwarded,
+          lastAwardedAt: new Date(),
+        }
+      });
+      totalPerkPoints = customer.perkPoints;
     }
 
     return {
       message: 'Feedback submitted successfully',
       feedbackId: feedback.id,
+      perkPointsAwarded,
+      totalPerkPoints
     };
   }
 
@@ -239,7 +270,7 @@ export class FeedbackService {
     };
   }
 
-  private async calculateRecoveryMetrics(caseId: string, recoveryRating: number) {
+  private async calculateRecoveryMetrics(caseId: string, recoveryRating: number, comment?: string) {
     try {
       const existingCase = await this.prisma.case.findUnique({
         where: { id: caseId },
@@ -248,17 +279,27 @@ export class FeedbackService {
 
       if (existingCase) {
         const delta = recoveryRating - existingCase.initialRating;
-        await this.prisma.case.update({
-          where: { id: caseId },
-          data: {
-            followUpRating: recoveryRating,
-            recoveryDelta: delta
-          }
-        });
+        
+        await this.prisma.$transaction([
+          this.prisma.recoveryFeedback.create({
+            data: {
+              caseId,
+              newRating: recoveryRating,
+              comment: comment,
+            }
+          }),
+          this.prisma.case.update({
+            where: { id: caseId },
+            data: {
+              followUpRating: recoveryRating,
+              recoveryDelta: delta,
+              status: 'RESOLVED' // Assume recovery feedback resolves the case
+            }
+          })
+        ]);
       }
     } catch (err) {
-      // Recovery metrics are non-critical data; we log but don't fail feedback submission.
-      console.error(`[FeedbackService] Failed to calculate recovery delta: ${err}`);
+      console.warn(`[FeedbackService] Recovery error: ${err.message}`);
     }
   }
 }

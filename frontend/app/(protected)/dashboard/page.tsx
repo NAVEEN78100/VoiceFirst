@@ -44,10 +44,10 @@ interface TrendData {
 
 const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }: any) => {
   const colorStyles: any = {
-    blue: { bg: 'bg-indigo-50', text: 'text-indigo-600', glow: 'bg-indigo-200' },
+    blue: { bg: 'bg-red-50', text: 'text-red-700', glow: 'bg-red-200' },
     yellow: { bg: 'bg-amber-50', text: 'text-amber-600', glow: 'bg-amber-200' },
-    red: { bg: 'bg-rose-50', text: 'text-rose-600', glow: 'bg-rose-200' },
-    green: { bg: 'bg-emerald-50', text: 'text-emerald-600', glow: 'bg-emerald-200' },
+    red: { bg: 'bg-red-50', text: 'text-red-700', glow: 'bg-red-300' },
+    green: { bg: 'bg-gray-50', text: 'text-gray-600', glow: 'bg-gray-200' },
     orange: { bg: 'bg-orange-50', text: 'text-orange-600', glow: 'bg-orange-200' }
   };
   const style = colorStyles[color] || colorStyles.blue;
@@ -138,7 +138,7 @@ export default function Dashboard() {
   const PIE_COLORS = {
     'OPEN': 'var(--primary)',
     'IN_PROGRESS': 'var(--secondary)',
-    'RESOLVED': '#10b981',
+    'RESOLVED': '#16a34a',
     'CLOSED': 'var(--text-muted)',
   };
 

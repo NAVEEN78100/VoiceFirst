@@ -22,6 +22,12 @@ export interface FeedbackSubmittedPayload {
   /** Whether the submitter provided a contact phone number (for follow-up eligibility) */
   readonly hasPhone: boolean;
 
+  /** The selected primary issue. */
+  readonly issueTopic?: string;
+
+  /** Snippet of the comment for immediate notification context */
+  readonly commentPreview?: string;
+
   /** ISO 8601 timestamp of when the feedback was submitted */
   readonly submittedAt: string;
 

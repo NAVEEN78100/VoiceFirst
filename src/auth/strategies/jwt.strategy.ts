@@ -19,8 +19,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // Standard header fallback
         (request: any) => {
-          return request?.cookies?.access_token;
+          const cookieToken = request?.cookies?.access_token;
+          if (!cookieToken) {
+            // Only log if specifically debugging auth issues
+            // console.warn('[JwtStrategy] No access_token cookie found');
+          }
+          return cookieToken;
         },
       ]),
       ignoreExpiration: false,

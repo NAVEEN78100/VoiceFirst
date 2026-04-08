@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FeedbackSubmittedListener } from './listeners/feedback-submitted.listener';
 import { CaseModule } from '../case/case.module';
+import { EventsController } from './events.controller';
 
 /**
  * EventsModule
@@ -19,6 +20,7 @@ import { CaseModule } from '../case/case.module';
  */
 @Module({
   imports: [CaseModule],
+  controllers: [EventsController],
   providers: [FeedbackSubmittedListener],
 })
 export class EventsModule {}

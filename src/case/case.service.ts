@@ -50,8 +50,14 @@ export class CaseService {
           feedback: {
             select: {
               comment: true,
+              issueTopic: true,
               phone: true,
-              touchpoint: { select: { name: true } },
+              ipAddress: true,
+              deviceType: true,
+              browser: true,
+              os: true,
+              createdAt: true,
+              touchpoint: { select: { name: true, type: true } },
             },
           },
         },

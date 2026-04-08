@@ -146,7 +146,7 @@ export default function SettingsPage() {
               <h2 style={{ fontSize: '20px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 Multi-Factor Authentication
                 {user.twoFactorEnabled ? (
-                  <span style={{ fontSize: '12px', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--secondary)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '12px', background: 'rgba(22, 163, 74, 0.1)', color: '#16a34a', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <CheckCircle2 size={14} /> Active
                   </span>
                 ) : (

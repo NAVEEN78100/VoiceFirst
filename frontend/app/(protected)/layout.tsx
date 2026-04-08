@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Settings, LogOut, LayoutDashboard, MapPin, Map, ShieldAlert, MessageSquare, Users } from 'lucide-react';
 import Link from 'next/link';
+import RealtimeNotifications from '@/components/RealtimeNotifications';
 
 export default function ProtectedLayout({
   children,

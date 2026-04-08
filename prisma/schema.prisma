@@ -113,6 +113,9 @@ model Branch {
   location  String?
   isActive  Boolean  @default(true) @map("is_active")
   
+  areaId    String?  @map("area_id")
+  area      Area?    @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -121,6 +124,17 @@ model Branch {
   feedbacks   Feedback[]
 
   @@map("branches")
+}
+
+model Area {
+  id        String   @id @default(uuid())
+  name      String
+  region    String?
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  branches  Branch[]
+
+  @@map("areas")
 }
 
 enum TouchpointType {
@@ -161,6 +175,13 @@ model Feedback {
   id            String   @id @default(uuid())
   rating        Int      @db.SmallInt // 1 to 5
   comment       String?  @db.Text
+  issueTopic    String?  @map("issue_topic")
+  serviceCategory String? @map("service_category")
+  issueTags     String?  @map("issue_tags")
+  followUpRequested Boolean @default(false) @map("follow_up_requested")
+  trackType     String   @default("ANONYMOUS") @map("track_type")
+  channel       String   @default("QR") @map("channel")
+  
   phone         String?  @db.VarChar(20) // Nullable for anonymous flow
   
   touchpointId  String   @map("touchpoint_id")
@@ -188,6 +209,18 @@ model Feedback {
   @@index([createdAt])
   @@index([rating])
   @@map("feedbacks")
+}
+
+// ─── Customer Loyalty System ──────────────────────────────────────
+
+model Customer {
+  phone         String   @id @db.VarChar(20)
+  perkPoints    Int      @default(0) @map("perk_points")
+  lastAwardedAt DateTime? @map("last_awarded_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("customers")
 }
 
 // ─── Case Management System ───────────────────────────────────────
@@ -232,12 +265,27 @@ model Case {
 
   feedback      Feedback     @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   touchpoint    Touchpoint   @relation(fields: [touchpointId], references: [id], onDelete: Restrict)
+  recoveryFeedback RecoveryFeedback?
 
   @@index([branchId])
   @@index([status])
   @@index([priority])
   @@index([createdAt])
   @@map("cases")
+}
+
+// ─── Recovery Feedback System ─────────────────────────────────────
+
+model RecoveryFeedback {
+  id          String   @id @default(uuid())
+  caseId      String   @unique @map("case_id")
+  newRating   Int      @db.SmallInt @map("new_rating") // 1-5
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("recovery_feedbacks")
 }
 
 // ─── Direct Inbound/Outbound Communication ───────────────────────

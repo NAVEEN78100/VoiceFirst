@@ -28,7 +28,7 @@
 .logo {
   font-size: 32px; /* Slightly larger */
   font-weight: 900;
-  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #8B0000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
@@ -79,7 +79,7 @@
 .submitBtn:hover:not(:disabled) {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+  box-shadow: 0 6px 20px rgba(200, 16, 46, 0.4);
 }
 
 .submitBtn:disabled {
@@ -103,8 +103,8 @@
 /* 2FA specific styles */
 .twoFactorMethodBadge {
   display: inline-flex;
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--secondary);
+  background: rgba(200, 16, 46, 0.08);
+  color: var(--primary);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 12px;

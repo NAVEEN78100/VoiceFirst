@@ -16,10 +16,10 @@ interface StaffMember {
 }
 
 const ROLE_STYLES: Record<string, { bg: string, text: string, icon: any }> = {
-  ADMIN: { bg: 'rgba(99, 102, 241, 0.1)', text: '#6366f1', icon: Shield },
-  MANAGER: { bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981', icon: Shield },
-  STAFF: { bg: 'rgba(59, 130, 246, 0.1)', text: '#3b82f6', icon: Shield },
-  CX: { bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b', icon: Shield }
+  ADMIN: { bg: 'rgba(200, 16, 46, 0.08)', text: '#C8102E', icon: Shield },
+  MANAGER: { bg: 'rgba(75, 85, 99, 0.1)', text: '#374151', icon: Shield },
+  STAFF: { bg: 'rgba(107, 114, 128, 0.1)', text: '#6B7280', icon: Shield },
+  CX: { bg: 'rgba(245, 158, 11, 0.1)', text: '#d97706', icon: Shield }
 };
 
 interface Branch {
@@ -45,6 +45,7 @@ export default function StaffPage() {
     branchId: user?.branchId || ''
   });
   const [copied, setCopied] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -87,6 +88,7 @@ export default function StaffPage() {
     e.preventDefault();
     setSubmitting(true);
     setCreatedPassword(null);
+    setCreateError(null);
     try {
       const res: any = await api.post('/users', createForm);
       if (res.data?.temporaryPassword) {
@@ -97,7 +99,7 @@ export default function StaffPage() {
       }
       await fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.message || "Creation failed");
+      setCreateError(error.response?.data?.message || "Creation failed");
     } finally {
       setSubmitting(false);
     }
@@ -159,7 +161,7 @@ export default function StaffPage() {
               gap: '8px', 
               border: 'none', 
               cursor: 'pointer',
-              boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.3)'
+              boxShadow: '0 10px 20px -5px rgba(200, 16, 46, 0.2)'
             }}
           >
             <UserPlus size={18} /> Register Member
@@ -186,14 +188,14 @@ export default function StaffPage() {
                       width: '44px', 
                       height: '44px', 
                       borderRadius: '14px', 
-                      background: `linear-gradient(45deg, var(--primary), #818cf8)`, 
+                      background: `linear-gradient(45deg, var(--primary), #8B0000)`, 
                       color: 'white', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
                       fontWeight: 'bold',
                       fontSize: '16px',
-                      boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+                      boxShadow: '0 4px 12px rgba(200, 16, 46, 0.15)'
                     }}>
                       {member.email.charAt(0).toUpperCase()}
                     </div>
@@ -281,7 +283,7 @@ export default function StaffPage() {
             
             {createdPassword ? (
               <div style={{ textAlign: 'center' }}>
-                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
+                <div style={{ background: 'rgba(200, 16, 46, 0.06)', color: '#C8102E', padding: '20px', borderRadius: '16px', marginBottom: '24px' }}>
                   <Shield style={{ margin: '0 auto 12px' }} />
                   <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Member Provisioned Successfully</div>
                   <div style={{ fontSize: '13px' }}>Provide these temporary credentials to the new user.</div>
@@ -301,11 +303,11 @@ export default function StaffPage() {
                       onClick={() => handleCopy(createdPassword)}
                       style={{ 
                         padding: '8px', 
-                        background: copied ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-hover)', 
+                        background: copied ? 'rgba(200, 16, 46, 0.08)' : 'var(--surface-hover)', 
                         border: '1px solid var(--border)', 
                         borderRadius: '8px', 
                         cursor: 'pointer',
-                        color: copied ? '#10b981' : 'var(--text)',
+                        color: copied ? '#C8102E' : 'var(--text)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
@@ -332,6 +334,11 @@ export default function StaffPage() {
               </div>
             ) : (
               <form onSubmit={handleCreate}>
+                {createError && (
+                  <div style={{ padding: '12px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', fontWeight: 'bold' }}>
+                    {createError}
+                  </div>
+                )}
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Display Name</label>
                   <input required value={createForm.name} onChange={e => setCreateForm({...createForm, name: e.target.value})} style={{ width: '100%', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)' }} placeholder="e.g. John Doe" />

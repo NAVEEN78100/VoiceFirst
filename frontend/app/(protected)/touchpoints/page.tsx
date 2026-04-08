@@ -119,7 +119,7 @@ export default function TouchpointsPage() {
               gap: '8px',
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.3)',
+              boxShadow: '0 10px 20px -5px rgba(200, 16, 46, 0.2)',
               transition: 'all 0.2s'
             }}
           >
@@ -144,7 +144,7 @@ export default function TouchpointsPage() {
                 <td style={{ padding: '20px' }}>
                   <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: '15px' }}>{point.name}</div>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                    <span style={{ fontSize: '11px', background: 'rgba(99,102,241,0.1)', color: '#818cf8', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.2)', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+                    <span style={{ fontSize: '11px', background: 'rgba(200,16,46,0.08)', color: '#C8102E', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(200,16,46,0.15)', fontWeight: 'bold', letterSpacing: '0.5px' }}>
                       {point.type}
                     </span>
                   </div>
@@ -241,7 +241,7 @@ export default function TouchpointsPage() {
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button type="button" onClick={() => setShowDeployModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
+                <button type="submit" disabled={submitting} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #C8102E, #a40d24)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
                   {submitting ? 'Registering...' : 'Deploy Endpoint'}
                 </button>
               </div>
@@ -270,7 +270,7 @@ export default function TouchpointsPage() {
             }}
           >
             <button onClick={() => setShowQrModal(null)} style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--surface-hover)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '10px', borderRadius: '50%', display: 'flex' }}><X size={20} /></button>
-            <div style={{ width: '64px', height: '64px', background: 'rgba(99,102,241,0.1)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <div style={{ width: '64px', height: '64px', background: 'rgba(200,16,46,0.08)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <QrCode size={32} color="var(--primary)" />
             </div>
             
@@ -320,7 +320,7 @@ export default function TouchpointsPage() {
                   border: 'none',
                   cursor: 'pointer', 
                   fontSize: '15px', 
-                  boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.4)',
+                  boxShadow: '0 10px 20px -5px rgba(200, 16, 46, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -373,7 +373,7 @@ export default function TouchpointsPage() {
               .print-badge {
                 font-size: 20px;
                 font-weight: 800;
-                color: #6366f1;
+                color: #C8102E;
                 margin-bottom: 24px;
                 letter-spacing: 2px;
                 text-transform: uppercase;
