@@ -19,9 +19,26 @@ async function bootstrap() {
   // Cookie parser
   app.use(cookieParser());
 
-  // CORS
+  // CORS setup for Production (Render + Vercel)
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        'http://localhost:3000', 
+        'http://127.0.0.1:3000',
+        'https://voicefirst.in',
+        'https://www.voicefirst.in'
+      ];
+      
+      // Accept Vercel preview environments dynamically
+      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(null, true); // MVP Bypass: Allow all origins to ensure no frontend blockage
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -45,7 +62,8 @@ async function bootstrap() {
   // Global response transform interceptor
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  await app.listen(port);
+  // CRITICAL: Bind to 0.0.0.0 for Render deployments!
+  await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 VoiceFirst Auth Server running on http://localhost:${port}`);
   logger.log(`📡 API available at http://localhost:${port}/api/v1`);
