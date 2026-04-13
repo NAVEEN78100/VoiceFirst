@@ -15,6 +15,13 @@ export interface DashboardSummary {
   totalOpenCases: number;
   ratingDistribution: { rating: number; count: number }[];
   casesByStatus: { status: string; count: number }[];
+  branchComparison?: {
+    branchName: string;
+    avgRating: number;
+    feedbackCount: number;
+    openCases: number;
+    resolvedPercentage: number;
+  }[];
 }
 
 /**
@@ -106,6 +113,7 @@ export class DashboardService {
         totalOpenCases: totalActive,
         ratingDistribution: (distribution as any[]).map((d) => ({ rating: d.rating, count: d._count.id })),
         casesByStatus: (casesAgg as any[]).map((c) => ({ status: c.status, count: c._count.id })),
+        branchComparison: user.role === Role.ADMIN ? await this.getBranchStats(whereFeedback) : undefined,
       };
     } catch (err) {
       this.logger.error(`Critical Failure in getSummary: ${err.stack}`);
@@ -240,5 +248,47 @@ export class DashboardService {
     }
 
     return { dateRange, effectiveBranchId, effectiveStaffId };
+  }
+
+  /**
+   * Internal helper to get branch-wise statistics for comparison.
+   */
+  private async getBranchStats(whereFeedback: any) {
+    const branches = await this.prisma.branch.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true }
+    });
+
+    const stats = await Promise.all(branches.map(async (b) => {
+      const fbWhere = { ...whereFeedback, branchId: b.id };
+      
+      const [agg, cases] = await Promise.all([
+        this.prisma.feedback.aggregate({
+          where: fbWhere,
+          _count: { id: true },
+          _avg: { rating: true }
+        }),
+        this.prisma.case.groupBy({
+          by: ['status'],
+          where: { branchId: b.id },
+          _count: { id: true }
+        })
+      ]);
+
+      const totalCases = cases.reduce((sum, c) => sum + c._count.id, 0);
+      const resolved = cases.find(c => c.status === 'RESOLVED' || c.status === 'CLOSED')?._count.id || 0;
+      const open = cases.filter(c => ['NEW', 'ACKNOWLEDGED', 'IN_PROGRESS'].includes(c.status))
+        .reduce((sum, c) => sum + c._count.id, 0);
+
+      return {
+        branchName: b.name,
+        avgRating: parseFloat((agg._avg.rating || 0).toFixed(2)),
+        feedbackCount: agg._count.id,
+        openCases: open,
+        resolvedPercentage: totalCases > 0 ? parseFloat(((resolved / totalCases) * 100).toFixed(1)) : 0
+      };
+    }));
+
+    return stats.sort((a, b) => b.avgRating - a.avgRating);
   }
 }
