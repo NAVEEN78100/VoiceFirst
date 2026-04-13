@@ -4,6 +4,7 @@ import { CreateCaseInput, CreateCaseResult } from './interfaces/case.interfaces'
 import { CaseStatus } from '@prisma/client';
 import { Role } from '../common/enums/role.enum';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MessagingService } from '../messaging/messaging.service';
 import { EVENTS } from '../events/events.constants';
 
 /**
@@ -26,6 +27,7 @@ export class CaseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly messagingService: MessagingService,
   ) {}
 
   /**
@@ -40,7 +42,6 @@ export class CaseService {
         if (!user.branchId) throw new ForbiddenException('Manager has no branch.');
         where.branchId = user.branchId;
       } else if (user.role === Role.STAFF) {
-        // Direct relation filtering in findMany
         where.touchpoint = { staffId: user.id };
       }
 
@@ -56,6 +57,7 @@ export class CaseService {
               deviceType: true,
               browser: true,
               os: true,
+              mediaUrl: true,
               createdAt: true,
               touchpoint: { select: { name: true, type: true } },
             },
@@ -77,10 +79,14 @@ export class CaseService {
     newStatus: CaseStatus,
     user: { id: string; role: Role; branchId?: string | null },
     notes?: string,
+    resolutionNotes?: string,
   ) {
     const existingCase = await this.prisma.case.findUnique({
       where: { id },
-      include: { feedback: { select: { phone: true } } }
+      include: { 
+        feedback: { select: { phone: true, rating: true } },
+        branch: { select: { name: true } }
+      }
     });
 
     if (!existingCase) throw new NotFoundException('Case not found.');
@@ -91,7 +97,6 @@ export class CaseService {
     }
 
     if (user.role === Role.STAFF) {
-      // Staff can only update if the case is linked to their touchpoint
       const touchpoint = await this.prisma.touchpoint.findUnique({
         where: { id: existingCase.touchpointId },
         select: { staffId: true }
@@ -111,7 +116,12 @@ export class CaseService {
     }
 
     // 3. Metadata
-    const updateData: any = { status: newStatus, notes: notes || undefined };
+    const updateData: any = { 
+      status: newStatus, 
+      notes: notes || undefined,
+      resolutionNotes: resolutionNotes || undefined,
+      resolvedById: newStatus === CaseStatus.RESOLVED ? user.id : undefined,
+    };
 
     if (newStatus === CaseStatus.RESOLVED && !existingCase.resolvedAt) {
       updateData.resolvedAt = new Date();
@@ -122,7 +132,7 @@ export class CaseService {
       data: updateData,
     });
 
-    // 4. Closed-Loop Trigger (Part 2)
+    // 4. Closed-Loop Trigger
     if (newStatus === CaseStatus.RESOLVED) {
       this.logger.log(`[CaseService] Case ${id} resolved. Emitting recovery event.`);
       this.eventEmitter.emit(EVENTS.CASE_RESOLVED, {
@@ -131,6 +141,23 @@ export class CaseService {
         touchpointId: existingCase.touchpointId,
         phone: existingCase.feedback.phone,
       });
+
+      // Send WhatsApp Resolution Notification
+      if (existingCase.feedback.phone) {
+        this.messagingService.sendResolution(
+          existingCase.feedback.phone,
+          existingCase.branch.name,
+          resolutionNotes || 'Standard Resolution Protocol Followed'
+        ).catch(err => console.error(`[CaseService] WhatsApp Resolution Failed: ${err.message}`));
+      }
+    }
+
+    // Trigger "In-Progress" Notification
+    if (newStatus === CaseStatus.IN_PROGRESS && existingCase.feedback.phone) {
+      this.messagingService.sendRecoveryStarted(
+        existingCase.feedback.phone,
+        existingCase.branch.name
+      ).catch(err => console.error(`[CaseService] WhatsApp In-Progress Alert Failed: ${err.message}`));
     }
 
     return updated;
@@ -153,7 +180,7 @@ export class CaseService {
           feedbackId: input.feedbackId,
           branchId: input.branchId,
           touchpointId: input.touchpointId,
-          initialRating: input.rating, // Renamed in schema
+          initialRating: input.rating,
           priority: input.rating === 1 ? 'CRITICAL' : 'HIGH',
           status: CaseStatus.NEW,
           canContact: input.hasPhone,

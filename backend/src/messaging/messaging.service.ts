@@ -355,7 +355,31 @@ export class MessagingService implements OnModuleInit, OnModuleDestroy {
   }
 
   private buildMessageText(surveyUrl: string): string {
-    return `Thank you for choosing VoiceFirst. Please share your quick feedback: ${surveyUrl}`;
+    return `Greetings! Thank you for choosing VoiceFirst. We value your feedback. Please share your experience here: ${surveyUrl}`;
+  }
+
+  /**
+   * Sends an immediate alert to the Branch Manager for negative feedback.
+   */
+  async sendManagerAlert(managerPhone: string, feedback: any, branchName: string) {
+    const text = `🔴 *Urgent Service Recovery Required*\n\nCritical feedback received at *${branchName}*.\n\n*Rating:* ${feedback.rating}/5\n*Issue:* "${feedback.comment || 'No comment'}"\n*Customer:* ${feedback.phone || 'Anonymous'}\n\nPlease take immediate action to resolve this.`;
+    return this.whatsappProvider.sendTextMessage(managerPhone, text);
+  }
+
+  /**
+   * Notifies the customer that their issue is being addressed.
+   */
+  async sendRecoveryStarted(customerPhone: string, branchName: string) {
+    const text = `👋 *Hi there!*\n\nThis is the team at *${branchName}*. We genuinely value your feedback.\n\nJust wanted to let you know that we have started working on the issue you reported. Your satisfaction is our top priority!`;
+    return this.whatsappProvider.sendTextMessage(customerPhone, text);
+  }
+
+  /**
+   * Informs the customer that the issue has been successfully resolved.
+   */
+  async sendResolution(customerPhone: string, branchName: string, notes: string) {
+    const text = `✨ *Great News!*\n\nThe issue you recently reported at *${branchName}* has been fully resolved.\n\n*Internal Resolution:* ${notes}\n\nYour feedback was incredibly helpful in making us better! Thank you for your patience.\n\n_— The VoiceFirst Team_`;
+    return this.whatsappProvider.sendTextMessage(customerPhone, text);
   }
 
   private normalizePhone(rawPhone: string): string {

@@ -48,6 +48,7 @@ model User {
   tempAuthTokens TempAuthToken[]
   touchpoints    Touchpoint[]
   messageLogs    MessageLog[]
+  resolvedCases  Case[]       @relation("CaseResolver")
 
   @@map("users")
 }
@@ -111,6 +112,7 @@ model Branch {
   name      String
   code      String?  @unique
   location  String?
+  managerPhone String? @map("manager_phone")
   isActive  Boolean  @default(true) @map("is_active")
   
   areaId    String?  @map("area_id")
@@ -122,6 +124,7 @@ model Branch {
   users       User[]
   touchpoints Touchpoint[]
   feedbacks   Feedback[]
+  cases       Case[]
 
   @@map("branches")
 }
@@ -183,6 +186,7 @@ model Feedback {
   channel       String   @default("QR") @map("channel")
   
   phone         String?  @db.VarChar(20) // Nullable for anonymous flow
+  mediaUrl      String?  @map("media_url") @db.Text  // For photo upload proof
   
   touchpointId  String   @map("touchpoint_id")
   branchId      String   @map("branch_id")
@@ -262,9 +266,13 @@ model Case {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   resolvedAt    DateTime?    @map("resolved_at")
+  resolutionNotes String?     @map("resolution_notes") @db.Text
+  resolvedById  String?      @map("resolved_by_id")
 
   feedback      Feedback     @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   touchpoint    Touchpoint   @relation(fields: [touchpointId], references: [id], onDelete: Restrict)
+  branch        Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  resolvedBy    User?        @relation("CaseResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
   recoveryFeedback RecoveryFeedback?
 
   @@index([branchId])

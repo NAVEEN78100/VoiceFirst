@@ -3,6 +3,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto } from './dto/feedback.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MessagingService } from '../messaging/messaging.service';
 import { EVENTS } from '../events/events.constants';
 import { FeedbackSubmittedPayload } from '../events/interfaces/feedback-submitted.payload';
 import { MessageStatus, Role, Prisma } from '@prisma/client';
@@ -15,6 +16,7 @@ export class FeedbackService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly messagingService: MessagingService,
   ) {}
 
   async submitFeedback(dto: CreateFeedbackDto, req: Request) {
@@ -35,7 +37,7 @@ export class FeedbackService {
     if (dto.touchpointToken) {
       touchpoint = await this.prisma.touchpoint.findUnique({
         where: { token: dto.touchpointToken },
-        select: { id: true, branchId: true, isActive: true },
+        select: { id: true, branchId: true, isActive: true, branch: { select: { id: true, name: true, managerPhone: true } } },
       });
     }
 
@@ -93,6 +95,15 @@ export class FeedbackService {
           deliveredAt: new Date(),
         },
       });
+    }
+
+    // WhatsApp Alert for Low Rating
+    if (feedback.rating <= 2) {
+      const branch: any = (touchpoint as any).branch;
+      if (branch?.managerPhone) {
+        this.messagingService.sendManagerAlert(branch.managerPhone, feedback, branch.name)
+          .catch(err => console.error(`[FeedbackService] WhatsApp Alert Failed: ${err.message}`));
+      }
     }
 
     // 3. Emit a strongly-typed, PII-safe event payload.
